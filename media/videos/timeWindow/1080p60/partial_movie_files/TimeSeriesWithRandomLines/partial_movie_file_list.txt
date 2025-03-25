@@ -1,0 +1,7 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/3977891868_74754433_223132457.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/2852726489_1928520532_1151161944.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/2852726489_2961544582_1177202954.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/2852726489_3343576788_1467578848.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/2852726489_291120039_2442844242.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithRandomLines/2852726489_4247107814_2563163034.mp4'

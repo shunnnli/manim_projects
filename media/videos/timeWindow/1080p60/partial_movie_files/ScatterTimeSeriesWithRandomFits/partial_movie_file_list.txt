@@ -1,0 +1,10 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/3977891868_74754433_223132457.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_1217665508_4098119655.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_3491126325_1201678712.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_4249682336_717831302.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_2134639040_1782630385.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_2857168403_3633556773.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_4249682336_2827960406.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_3188861884_3111894826.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/ScatterTimeSeriesWithRandomFits/2852726489_667144672_1692015177.mp4'

@@ -1,0 +1,12 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/3977891868_463056788_223132457.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_976021603_3997778882.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_2700642709_3476806455.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_4071516364_386815042.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_2205189737_357163014.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_1761181935_2389467572.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_4071516364_902540457.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_2162027927_1608772871.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_2364473816_884547358.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_3493409413_2222615367.mp4'
+file 'file:/Users/shunli/Desktop/Manim/media/videos/timeWindow/1080p60/partial_movie_files/TimeSeriesWithHeatmap/2852726489_4247107814_590617835.mp4'
