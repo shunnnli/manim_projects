@@ -14,28 +14,29 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
         #################################################################
         #                 1) TOP: TIME-SERIES PLOT                      #
         #################################################################
+        # Create a 6-unit wide Axes for the top plot
         axes_top = Axes(
             x_range=[0, n, 1],
             y_range=[-1.5, 1.5, 0.5],
-            x_length=6,     # width of 6 units
+            x_length=6,  
             y_length=3,
             axis_config={
                 "font_size": 14,
                 "include_tip": False,
             },
             x_axis_config={
-                "include_numbers": True,
-                "include_ticks": False,
+                "include_numbers": False,
+                "include_ticks": False,  # no tick marks
             },
             y_axis_config={
-                "include_numbers": True,
-                "include_ticks": False,
+                "include_numbers": False,
+                "include_ticks": False,  # no tick marks
             },
         )
         axes_top.to_edge(UP, buff=0.5)
         self.play(Create(axes_top))
 
-        # Labels for the top axes.
+        # Labels for the top axes
         x_label_top = Text("Trials", font_size=20)
         x_label_top.next_to(axes_top.x_axis, DOWN, buff=0.2)
 
@@ -45,7 +46,7 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
 
         self.play(Write(x_label_top), Write(y_label_top))
 
-        # Scatter dots for the time series.
+        # Scatter dots for the time series
         dots = VGroup(*[
             Dot(axes_top.coords_to_point(x, y), radius=0.04, color=BLUE)
             for x, y in zip(x_vals, y_vals)
@@ -53,38 +54,40 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
         self.play(FadeIn(dots, lag_ratio=0.05))
 
         #################################################################
-        #                  2) BOTTOM: HEATMAP (NO AXES)                 #
+        #           2) BOTTOM: TRIANGULAR HEATMAP (NO AXES)             #
         #################################################################
-        # We want the heatmap to be 6 units wide (matching the top plot).
-        # Here, i is the "Starting trial" (column) and j is the "Ending trial" (row).
-        # To have the y-axis increase as you go down (i.e. row 0 at the top), we
-        # position each square using y = (n - j - 0.5)*cell_size.
-        cell_size = 6 / n  # so that n columns span 6 units.
+        # We want the heatmap also to be ~6 units wide, matching the top.
+        # i = "Starting trial" (x-axis, left → right)
+        # j = "Ending trial"   (y-axis, top → bottom)
+        # We'll place squares only where j > i, so end > start.
+        cell_size = 6 / n  # so that n columns => 6 units wide
 
         squares = {}
         heatmap_group = VGroup()
 
-        # Build the triangular region for valid windows (only for i < j).
-        # Loop over rows j and columns i, with j representing the ending trial.
+        # For each pair (i, j) with j > i, place a square.
+        # We interpret row j as moving downward. So if j=0 is top, j=1 is below it, etc.
+        # We'll invert the y-coordinate by using -(j+0.5).
         for j in range(n):
             for i in range(j):
                 sq = Square(side_length=cell_size)
                 sq.set_fill(GREY, opacity=0.3)
                 sq.set_stroke(width=0)
-                # Position:
-                # x coordinate: (i + 0.5)*cell_size (i is the starting trial/column)
-                # y coordinate: (n - j - 0.5)*cell_size so that j = 0 is at the top.
-                pos = np.array([i + 0.5, (n - j - 0.5), 0]) * cell_size
+                # Position each square so:
+                # x = i + 0.5,   y = -(j + 0.5)
+                pos = np.array([i + 0.5, -(j + 0.5), 0]) * cell_size
                 sq.move_to(pos)
                 squares[(i, j)] = sq
                 heatmap_group.add(sq)
 
-        # Position the entire heatmap group below the top axes, left-aligned.
+        # Place the heatmap group below the top axes, left-aligned
         heatmap_group.next_to(axes_top, DOWN, buff=1, aligned_edge=LEFT)
 
-        # Add text labels: "Starting trial" on the bottom (x axis) and "Ending trial" on the right (y axis).
+        # Add labels: "Starting trial" (below), "Ending trial" (left, top→bottom)
         start_label = Text("Starting trial", font_size=20)
-        end_label = Text("Ending trial", font_size=20).rotate(90 * DEGREES)
+        end_label = Text("Ending trial", font_size=20)
+        # Rotate by -90° so text reads from top to bottom
+        end_label.rotate(-90 * DEGREES)
 
         start_label.next_to(heatmap_group, DOWN, buff=0.5)
         end_label.next_to(heatmap_group, RIGHT, buff=0.5)
@@ -122,9 +125,12 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
         #################################################################
         #      5) SYNCHRONIZED ANIMATION OF FITTING WINDOWS             #
         #################################################################
+        # Suppose each (i, j) is a "window" from trial i to trial j,
+        # with j > i. We'll animate drawing lines on top and
+        # transforming them into squares below.
         for i in range(n):
             for j in range(i + 1, n):
-                # 1) Draw vertical lines + slope line in the top plot.
+                # 1) Draw vertical lines + slope line in the top plot
                 p1 = axes_top.coords_to_point(i, y_vals[i])
                 p2 = axes_top.coords_to_point(j, y_vals[j])
 
@@ -148,22 +154,22 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
                 self.play(Create(line1), Create(line2), Create(slope_line), Write(slope_text))
                 self.wait(0.5)
 
-                # 2) Fade out the original gray square.
+                # 2) Fade out the original gray square
                 gray_sq = squares[(i, j)]
                 self.play(FadeOut(gray_sq), run_time=0.3)
 
-                # 3) Create a new colored square in the same position.
+                # 3) Create a new colored square in the same position
                 colored_square = Square(side_length=cell_size)
                 colored_square.set_stroke(width=0)
                 colored_square.set_fill(slope_to_color(slope_value), opacity=1)
                 colored_square.move_to(gray_sq.get_center())
                 self.add(colored_square)
 
-                # 4) Transform a copy of the top-fit group into this colored square.
+                # 4) Transform a copy of the top‐fit group into this colored square
                 self.play(TransformFromCopy(fit_group, colored_square), run_time=0.5)
                 self.play(FadeOut(fit_group))
 
-                # Update the dictionary.
+                # Update squares dictionary
                 squares[(i, j)] = colored_square
 
         self.wait(2)
