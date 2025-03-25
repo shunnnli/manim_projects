@@ -8,8 +8,7 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
         #################################################################
         n = 6
         x_vals = np.arange(n)
-        # Example data: noisy sine
-        y_vals = np.sin(0.3 * x_vals) + 0.1 * np.random.randn(n)
+        y_vals = [0.5,1,0.1,-1,-0.3,0.8]
 
         #################################################################
         #                 1) TOP: TIME-SERIES PLOT                      #
@@ -48,7 +47,7 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
 
         # Scatter dots for the time series
         dots = VGroup(*[
-            Dot(axes_top.coords_to_point(x, y), radius=0.04, color=BLUE)
+            Dot(axes_top.coords_to_point(x, y), radius=0.1, color=BLUE)
             for x, y in zip(x_vals, y_vals)
         ])
         self.play(FadeIn(dots, lag_ratio=0.05))
@@ -87,10 +86,10 @@ class TimeSeriesAndHeatmapSynchronized(MovingCameraScene):
         start_label = Text("Starting trial", font_size=20)
         end_label = Text("Ending trial", font_size=20)
         # Rotate by -90° so text reads from top to bottom
-        end_label.rotate(-90 * DEGREES)
+        end_label.rotate(90 * DEGREES)
 
         start_label.next_to(heatmap_group, DOWN, buff=0.5)
-        end_label.next_to(heatmap_group, RIGHT, buff=0.5)
+        end_label.next_to(heatmap_group, LEFT, buff=0.5)
 
         heatmap_all = VGroup(heatmap_group, start_label, end_label)
         self.play(FadeIn(heatmap_all, lag_ratio=0.01))
