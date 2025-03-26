@@ -86,7 +86,7 @@ class MergeHeatmaps(MovingCameraScene):
         merged_heatmap = VGroup(*heatmaps)
         self.wait(2)
 
-        # Transfrom the merged map to the big heatmap
+        # Step 5: Transfrom the merged map to the big heatmap
         n_big = 50
         big_y_vals = np.sin(0.3 * np.arange(n_big)) + 2 * rng.normal(size=n_big)
         big_heatmap = create_triangular_heatmap(big_y_vals, cell_size=0.5)
@@ -96,3 +96,4 @@ class MergeHeatmaps(MovingCameraScene):
 
         self.play(ReplacementTransform(merged_heatmap, big_heatmap), run_time=3)
         self.wait(2)
+        self.remove(merged_heatmap)
