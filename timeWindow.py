@@ -5,14 +5,14 @@ import numpy as np
 #                     HELPER FUNCTION                           #
 #################################################################
 def slope_to_color(slope, vmin=-1, vmax=1):
-            if np.isnan(slope):
-                return BLACK
-            slope_clamped = max(min(slope, vmax), vmin)
-            alpha = (slope_clamped - vmin) / (vmax - vmin)
-            if alpha < 0.5:
-                return interpolate_color(BLUE, WHITE, alpha / 0.5)
-            else:
-                return interpolate_color(WHITE, RED, (alpha - 0.5) / 0.5)
+    if np.isnan(slope):
+        return BLACK
+    slope_clamped = max(min(slope, vmax), vmin)
+    alpha = (slope_clamped - vmin) / (vmax - vmin)
+    if alpha < 0.5:
+        return interpolate_color(BLUE, WHITE, alpha / 0.5)
+    else:
+        return interpolate_color(WHITE, RED, (alpha - 0.5) / 0.5)
 
 def draw_fitted_line(scene, axes, x_vals, y_vals, 
                     line_color=GREEN, box_color=RED, box_opacity=0.3,
