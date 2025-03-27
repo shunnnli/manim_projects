@@ -78,13 +78,38 @@ class DAvsEImap(MovingCameraScene):
         big_heatmap = create_triangular_heatmap(big_y_vals, cell_size=0.5)
         big_heatmap.scale_to_fit_width(config.frame_width / 2 - 1)
         big_heatmap.to_edge(LEFT, buff=0.5)
-        self.add(big_heatmap)
+
+        top_left = big_heatmap.get_corner(UP + LEFT)
+        bottom_left = big_heatmap.get_corner(DOWN + LEFT)
+        bottom_right = big_heatmap.get_corner(DOWN + RIGHT)
+        # Arrow for "Starting trial →"
+        arrow_start = Arrow(
+            start=bottom_left + DOWN * 0.3,
+            end=bottom_right + DOWN * 0.3,
+            buff=0.01,
+            stroke_width=3,
+            color=WHITE
+        )
+        label_start = Text("Starting trial", font_size=20).next_to(arrow_start, DOWN)
+        # Arrow for "Ending trial ↓"
+        arrow_end = Arrow(
+            start=top_left + LEFT * 0.3,
+            end=bottom_left + LEFT * 0.3,
+            buff=0.01,
+            stroke_width=3,
+            color=WHITE
+        )
+        label_end = Text("Ending trial", font_size=20).rotate(90 * DEGREES).next_to(arrow_end, LEFT)
+
+        # Add all heatmap elements to the scene
+        heatmap_all = VGroup(big_heatmap, arrow_start, label_start, arrow_end, label_end)
+        self.add(heatmap_all)
         
         # Zoom the camera so that the heatmap is visible.
         self.play(
             self.camera.frame.animate
-                .set(width=big_heatmap.width * 1.2, height=big_heatmap.height * 1.2)
-                .move_to(big_heatmap.get_right())
+                .set(width=heatmap_all.width * 1.2, height=heatmap_all.height * 1.2)
+                .move_to(heatmap_all.get_right())
         )
         self.wait(1)
 
@@ -96,11 +121,11 @@ class DAvsEImap(MovingCameraScene):
         frame_top = self.camera.frame.get_top()
         middle_corner = np.array([frame_center[0], frame_top[1]-1, 0])
 
-        EI_label = Text("Animal EI index: ", font_size=15)
+        EI_label = Text("Animal EI index: ", font_size=20)
         EI_label.move_to(middle_corner)
         animalEI = np.round(np.random.uniform(-1, 1, 8), 2)
         vector_latex = generate_vector_tex(animalEI)
-        animalEI_vec = MathTex(vector_latex, font_size=22)
+        animalEI_vec = MathTex(vector_latex, font_size=25)
         animalEI_vec.next_to(EI_label, RIGHT, buff=0.2)
         self.play(Write(EI_label), Write(animalEI_vec))
         self.wait(1)
@@ -114,11 +139,11 @@ class DAvsEImap(MovingCameraScene):
                 break
 
         # Show DA slope vector
-        DA_label = Text("DA slope\nduring window: ", font_size=15)
+        DA_label = Text("DA slope\nduring window: ", font_size=20)
         DA_label.next_to(EI_label, DOWN, buff=0.3)
         slopeDA = np.round(np.random.uniform(-1, 1, 8), 2)
         vector_latex = generate_vector_tex(slopeDA)
-        slopeDA_vec = MathTex(vector_latex, font_size=22)
+        slopeDA_vec = MathTex(vector_latex, font_size=25)
         slopeDA_vec.next_to(DA_label.get_right(), RIGHT, buff=0.2)
 
         # Circle the target pixel
@@ -167,7 +192,7 @@ class DAvsEImap(MovingCameraScene):
             y_axis_config={"label_direction": LEFT},
         )
         # Labels
-        x_label = Text("Animal EI index", font_size=20)
+        x_label = Text("Animal\nEI index", font_size=20)
         y_label = Text("DA slope", font_size=20)
         x_label.next_to(scatter_axes.x_axis, RIGHT, buff=0.3)
         y_label.next_to(scatter_axes.y_axis, UP, buff=0.3)
@@ -175,7 +200,7 @@ class DAvsEImap(MovingCameraScene):
         # --- Positioning relative to slopeDA_vec and big_heatmap ---
         # Get key positions
         bottom = self.camera.frame.get_bottom()
-        heatmap_right = big_heatmap.get_right()
+        heatmap_right = heatmap_all.get_right()
         screen_right = self.camera.frame.get_right()
         slopeDA_vec_center = slopeDA_vec.get_center()
         mid_y = (slopeDA_vec_center[1] + bottom[1]) / 2
@@ -203,8 +228,11 @@ class DAvsEImap(MovingCameraScene):
         self.play(Transform(fit_group, highlight_sq), run_time=1)
         self.wait(2)
 
+        # Step 9: fade in the true DAvsEI heatmap
+        
 
-        # Step 9: Repeat this process for multiple pixels
+
+        # Step 10: Repeat this process for multiple pixels
         # Set the coordinate of highlight pixel
         highlight_x = [36, 10]#, 17, 18, 19, 20, 21, 22, 23, 24]
         highlight_y = [49, 29]#, 29, 29, 29, 29, 29, 29, 29, 29]
@@ -226,7 +254,7 @@ class DAvsEImap(MovingCameraScene):
             # --- 2. New DA Vector ---
             new_slopeDA = np.round(np.random.uniform(-1, 1, 8), 2)
             new_vector_tex = generate_vector_tex(new_slopeDA)
-            new_slope_vec = MathTex(new_vector_tex, font_size=22).next_to(DA_label.get_right(), RIGHT, buff=0.2)
+            new_slope_vec = MathTex(new_vector_tex, font_size=25).next_to(DA_label.get_right(), RIGHT, buff=0.2)
 
             # --- 3. New Highlight Square + Arrow ---
             new_highlight_sq = Square(
@@ -271,14 +299,14 @@ class DAvsEImap(MovingCameraScene):
                 y_axis_config={"label_direction": LEFT},
             )
 
-            x_label = Text("Animal EI index", font_size=20)
+            x_label = Text("Animal\nEI index", font_size=20)
             y_label = Text("DA slope", font_size=20)
             x_label.next_to(new_scatter_axes.x_axis, RIGHT)
             y_label.next_to(new_scatter_axes.y_axis, UP)
 
             slopeDA_vec_center = new_slope_vec.get_center()
             mid_y = (slopeDA_vec_center[1] + self.camera.frame.get_bottom()[1]) / 2
-            mid_x = (big_heatmap.get_right()[0] + self.camera.frame.get_right()[0]) / 2
+            mid_x = (heatmap_all.get_right()[0] + self.camera.frame.get_right()[0]) / 2
 
             new_scatter_group = VGroup(new_scatter_axes, x_label, y_label).move_to([mid_x, mid_y, 0])
             new_scatter_group.move_to([mid_x, mid_y, 0])

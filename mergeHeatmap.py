@@ -63,7 +63,7 @@ class MergeHeatmaps(MovingCameraScene):
             self.wait(delay)
         self.wait(1)
 
-        # Step 3: Create a large composite heatmap on the left
+        # Step 3: Create a large composite heatmap
         merged_y_vals = np.mean([
             np.sin(0.3 * np.arange(n)) + 2 * rng.normal(size=n)
             for _ in range(n_maps)
@@ -72,21 +72,7 @@ class MergeHeatmaps(MovingCameraScene):
         merged_heatmap.scale_to_fit_width(config.frame_width / 2 - 1)
         merged_heatmap.to_edge(LEFT, buff=0.5)
 
-        # Step 4: Animate all small heatmaps transforming into the big one
-        transforms = [
-            Transform(hm, merged_heatmap, run_time=1)
-            for hm in heatmaps
-        ]
-        self.play(
-            self.camera.frame.animate
-                .set(width=merged_heatmap.width * 0.5, height=merged_heatmap.height * 1.2)
-                .move_to(merged_heatmap.get_right())
-        )
-        self.play(*transforms)
-        merged_heatmap = VGroup(*heatmaps)
-        self.wait(2)
-
-        # Step 5: Transfrom the merged map to the big heatmap
+        # Step 4: Transfrom the merged map to the big heatmap
         n_big = 50
         big_y_vals = np.sin(0.3 * np.arange(n_big)) + 2 * rng.normal(size=n_big)
         big_heatmap = create_triangular_heatmap(big_y_vals, cell_size=0.5)
@@ -94,6 +80,63 @@ class MergeHeatmaps(MovingCameraScene):
         big_heatmap.match_height(merged_heatmap)
         big_heatmap.move_to(merged_heatmap)
 
-        self.play(ReplacementTransform(merged_heatmap, big_heatmap), run_time=3)
-        self.wait(2)
+        # Add arrows to show trial direction
+        top_left = big_heatmap.get_corner(UP + LEFT)
+        bottom_left = big_heatmap.get_corner(DOWN + LEFT)
+        bottom_right = big_heatmap.get_corner(DOWN + RIGHT)
+        # Arrow for "Starting trial →"
+        arrow_start = Arrow(
+            start=bottom_left + DOWN * 0.3,
+            end=bottom_right + DOWN * 0.3,
+            buff=0.1,
+            stroke_width=3,
+            color=WHITE
+        )
+        label_start = Text("Starting trial", font_size=20).next_to(arrow_start, DOWN)
+        # Arrow for "Ending trial ↓"
+        arrow_end = Arrow(
+            start=top_left + LEFT * 0.3,
+            end=bottom_left + LEFT * 0.3,
+            buff=0.1,
+            stroke_width=3,
+            color=WHITE
+        )
+        label_end = Text("Ending trial", font_size=20).rotate(90 * DEGREES).next_to(arrow_end, LEFT)
+        # Add all heatmap elements to the scene
+        heatmap_all = VGroup(big_heatmap, arrow_start, label_start, arrow_end, label_end)
+
+        # Step 5: Animate all small heatmaps transforming into the big one
+        transforms = [
+            Transform(hm, merged_heatmap, run_time=1)
+            for hm in heatmaps
+        ]
+        self.play(
+            self.camera.frame.animate
+                .set(width=heatmap_all.width * 0.5, height=heatmap_all.height * 1.2)
+                .move_to(heatmap_all.get_right())
+        )
+        self.play(*transforms)
+        merged_heatmap = VGroup(*heatmaps)
+
+        self.play(ReplacementTransform(merged_heatmap, heatmap_all), run_time=3)
         self.remove(merged_heatmap)
+        
+        # Add the texts
+        DA_vs_EI_text = Text("DA vs EI map", font_size=40)
+        DA_vs_EI_text.next_to(heatmap_all, RIGHT, buff=2)
+
+        DA_heatmap_text = Text("DA slope heatmap", font_size=40)
+        DA_heatmap_text.next_to(DA_vs_EI_text, UP, buff=1)
+        
+        EI_text = Text("EP-LHb sign", font_size=40)
+        EI_text.next_to(DA_vs_EI_text, DOWN, buff=1)
+
+        # Animate texts
+        self.play(Write(DA_heatmap_text))
+        self.wait(5)
+        self.play(Write(EI_text))
+        self.wait(1)
+        text_transform = [ReplacementTransform(EI_text, DA_vs_EI_text, run_time=1), 
+                            ReplacementTransform(DA_heatmap_text, DA_vs_EI_text, run_time=1)]
+        self.play(*text_transform)
+        self.wait(2)

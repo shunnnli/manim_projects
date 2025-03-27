@@ -160,13 +160,6 @@ class TimeSeriesToHeatmap(MovingCameraScene):
         # Place the heatmap group below the top axes, left-aligned
         heatmap_group.next_to(axes_top, DOWN, buff=1, aligned_edge=LEFT)
 
-        # # Add labels: "Starting trial" (below), "Ending trial" (left, top→bottom)
-        # start_label = Text("Starting trial", font_size=20)
-        # end_label = Text("Ending trial", font_size=20).rotate(90 * DEGREES)
-
-        # start_label.next_to(heatmap_group, DOWN, buff=0.5)
-        # end_label.next_to(heatmap_group, LEFT, buff=0.5)
-
         # Add arrows to indicate the direction of the heatmap
         # Compute key corners of the heatmap
         top_left = heatmap_group.get_corner(UP + LEFT)
@@ -175,8 +168,8 @@ class TimeSeriesToHeatmap(MovingCameraScene):
 
         # Arrow for "Starting trial →"
         arrow_start = Arrow(
-            start=bottom_left + DOWN * 0.5,
-            end=bottom_right + DOWN * 0.5,
+            start=bottom_left + DOWN * 0.3,
+            end=bottom_right + DOWN * 0.3,
             buff=0.1,
             stroke_width=3,
             color=WHITE
@@ -185,8 +178,8 @@ class TimeSeriesToHeatmap(MovingCameraScene):
 
         # Arrow for "Ending trial ↓"
         arrow_end = Arrow(
-            start=top_left + LEFT * 0.5,
-            end=bottom_left + LEFT * 0.5,
+            start=top_left + LEFT * 0.3,
+            end=bottom_left + LEFT * 0.3,
             buff=0.1,
             stroke_width=3,
             color=WHITE
