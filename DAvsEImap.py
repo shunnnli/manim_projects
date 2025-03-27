@@ -38,8 +38,8 @@ def create_triangular_heatmap(data, cell_size=0.15):
 def generate_vector_tex(data, orientation='horizontal'):
     # Generate n random numbers and format them into a LaTeX column vector.
     random_strs = [str(val) for val in data]
-    if len(data) > 10:
-        vec_entries = random_strs[:3] + [r"\dots"] + random_strs[-3:]
+    if len(data) > 6:
+        vec_entries = random_strs[:3] + [r"\dots"] + random_strs[-4:]
     else:
         vec_entries = random_strs
     if orientation == 'horizontal':
@@ -55,16 +55,13 @@ def draw_fitted_line(scene, axes, x_vals, y_vals,
     # 1. Fit line using linear regression
     slope, intercept = np.polyfit(x_vals, y_vals, 1)
     fit_func = lambda x: slope * x + intercept
-    
     # 2. Plot the best-fit line over the window of the data
-    x_min, x_max = min(x_vals), max(x_vals)
+    x_min, x_max = -1, 1
     line = axes.plot(fit_func, x_range=[x_min, x_max], color=line_color)
-
     # 3. Add text showing the slope of the line
-    slope_text = MathTex(rf"\text{{slope}} = {slope:.2f}",font_size=font_size)\
-        .next_to(line, LEFT)
+    slope_text = MathTex(rf"\text{{slope}} = {slope:.2f}",font_size=font_size)
+    slope_text.move_to(line.get_start() + LEFT * (slope_text.width / 2 + 0.1))
     fit_group = VGroup(line, slope_text)
-
     # 5. Animate the line and box
     if run_time > 0:
         scene.play(Create(line), Write(slope_text), run_time=run_time)
@@ -95,41 +92,38 @@ class DAvsEImap(MovingCameraScene):
         # Determine the target position: top left corner of the right half of the frame.
         # The right half's left boundary is the center of the frame.
         # So, the top-left corner of the right half is at (frame_center.x, frame_top.y).
-        frame_center = self.camera.frame.get_center()
+        frame_center = self.camera.frame.get_center() - 1*RIGHT
         frame_top = self.camera.frame.get_top()
         middle_corner = np.array([frame_center[0], frame_top[1]-1, 0])
 
         EI_label = Text("Animal EI index: ", font_size=15)
         EI_label.move_to(middle_corner)
-        animalEI = np.round(np.random.uniform(-1, 1, 10), 2)
+        animalEI = np.round(np.random.uniform(-1, 1, 8), 2)
         vector_latex = generate_vector_tex(animalEI)
         animalEI_vec = MathTex(vector_latex, font_size=22)
         animalEI_vec.next_to(EI_label, RIGHT, buff=0.2)
         self.play(Write(EI_label), Write(animalEI_vec))
         self.wait(1)
 
-        DA_label = Text("DA slope\nduring window: ", font_size=15)
-        DA_label.next_to(EI_label, DOWN, buff=0.3)
-        slopeDA = np.round(np.random.uniform(-1, 1, 10), 2)
-        vector_latex = generate_vector_tex(slopeDA)
-        slopeDA_vec = MathTex(vector_latex, font_size=22)
-        slopeDA_vec.next_to(animalEI_vec.get_center(), DOWN, buff=0.4)
-
-        # Step 3: Circle a pixel and show the corresponding vector on the side.
-        # Choose a target pixel; for example, (i, j) = (30, 40)
+        # Step 3: Circle a pixel and show the corresponding vector on the side
         i, j = 15, 29
         target_square = None
         for square in big_heatmap:
             if hasattr(square, "indices") and square.indices == (i, j):
                 target_square = square
                 break
-        if target_square is None:
-            print("Target square not found.")
-            return
+
+        # Show DA slope vector
+        DA_label = Text("DA slope\nduring window: ", font_size=15)
+        DA_label.next_to(EI_label, DOWN, buff=0.3)
+        slopeDA = np.round(np.random.uniform(-1, 1, 8), 2)
+        vector_latex = generate_vector_tex(slopeDA)
+        slopeDA_vec = MathTex(vector_latex, font_size=22)
+        slopeDA_vec.next_to(DA_label.get_right(), RIGHT, buff=0.2)
 
         # Circle the target pixel
         highlight_sq = Square(
-            side_length=target_square.get_width() + 0.1,
+            side_length=target_square.width + 0.1,
             color=RED,
             stroke_width=4
         )
@@ -154,12 +148,10 @@ class DAvsEImap(MovingCameraScene):
 
         # Step 6: Make a scatter plot of slopeDA and animalEI below slopeDA
         # Compute axis limits and paddings
-        x_min, x_max = animalEI.min(), animalEI.max()
+        x_min, x_max = -1, 1
         y_min, y_max = slopeDA.min(), slopeDA.max()
-
         x_padding = (x_max - x_min) * 0.1
         y_padding = (y_max - y_min) * 0.1
-
         x_ticks = np.linspace(x_min - x_padding, x_max + x_padding, 3)
         y_ticks = np.linspace(y_min - y_padding, y_max + y_padding, 3)
 
@@ -170,16 +162,15 @@ class DAvsEImap(MovingCameraScene):
             x_length=4,
             y_length=4,
             tips=False,
-            axis_config={"include_ticks": False, "include_numbers": False},
-            x_axis_config={"numbers_to_include": x_ticks, "label_direction": DOWN},
-            y_axis_config={"numbers_to_include": y_ticks, "label_direction": LEFT},
+            axis_config={"include_ticks": True, "include_numbers": True},
+            x_axis_config={"label_direction": DOWN},
+            y_axis_config={"label_direction": LEFT},
         )
-
         # Labels
-        x_label = Text("Animal EI index", font_size=15)
-        y_label = Text("DA slope", font_size=15)
-        x_label.next_to(scatter_axes.x_axis, DOWN)
-        y_label.next_to(scatter_axes.y_axis, LEFT)
+        x_label = Text("Animal EI index", font_size=20)
+        y_label = Text("DA slope", font_size=20)
+        x_label.next_to(scatter_axes.x_axis, RIGHT, buff=0.3)
+        y_label.next_to(scatter_axes.y_axis, UP, buff=0.3)
 
         # --- Positioning relative to slopeDA_vec and big_heatmap ---
         # Get key positions
@@ -187,14 +178,12 @@ class DAvsEImap(MovingCameraScene):
         heatmap_right = big_heatmap.get_right()
         screen_right = self.camera.frame.get_right()
         slopeDA_vec_center = slopeDA_vec.get_center()
-        # Vertical position: halfway between slopeDA_vec and screen bottom
         mid_y = (slopeDA_vec_center[1] + bottom[1]) / 2
-        # Horizontal position: halfway between right of heatmap and right of screen
         mid_x = (heatmap_right[0] + screen_right[0]) / 2
-        # Apply position
         scatter_group = VGroup(scatter_axes, x_label, y_label)
         scatter_group.move_to([mid_x, mid_y, 0])
         
+        # Scatter points
         scatter_points = VGroup(*[
             Dot(point=scatter_axes.coords_to_point(x, y), radius=0.08, color=BLUE)
             for x, y in zip(animalEI, slopeDA)
@@ -214,3 +203,108 @@ class DAvsEImap(MovingCameraScene):
         self.play(Transform(fit_group, highlight_sq), run_time=1)
         self.wait(2)
 
+
+        # Step 9: Repeat this process for multiple pixels
+        # Set the coordinate of highlight pixel
+        highlight_x = [36, 10]#, 17, 18, 19, 20, 21, 22, 23, 24]
+        highlight_y = [49, 29]#, 29, 29, 29, 29, 29, 29, 29, 29]
+
+        # Keep references to previous elements to update them smoothly
+        prev_highlight = highlight_sq
+        prev_arrow = curved_arr
+        prev_slope_vec = slopeDA_vec
+        prev_scatter_group = scatter_group
+        prev_points = scatter_points
+        prev_fit_group = fit_group
+
+        for i, j in zip(highlight_x, highlight_y):
+            # --- 1. New Target Square ---
+            target_square = next((sq for sq in big_heatmap if getattr(sq, "indices", None) == (i, j)), None)
+            if target_square is None:
+                continue
+
+            # --- 2. New DA Vector ---
+            new_slopeDA = np.round(np.random.uniform(-1, 1, 8), 2)
+            new_vector_tex = generate_vector_tex(new_slopeDA)
+            new_slope_vec = MathTex(new_vector_tex, font_size=22).next_to(DA_label.get_right(), RIGHT, buff=0.2)
+
+            # --- 3. New Highlight Square + Arrow ---
+            new_highlight_sq = Square(
+                side_length=target_square.width + 0.1,
+                color=RED,
+                stroke_width=4
+            ).move_to(target_square.get_center()).set_fill(opacity=0)
+
+            new_arrow = CurvedArrow(
+                start_point=new_highlight_sq.get_right(),
+                end_point=DA_label.get_left() - 0.2 * RIGHT,
+                angle=-PI/4,
+                tip_length=0.2,
+                color=RED
+            )
+
+            # --- 4. Animate vector and square updates ---
+            self.play(
+                ReplacementTransform(prev_highlight, new_highlight_sq),
+                ReplacementTransform(prev_arrow, new_arrow),
+                FadeOut(prev_slope_vec),
+                Write(new_slope_vec),
+                run_time=1
+            )
+
+            # --- 5. Scatter Plot Update ---
+            x_min, x_max = -1, 1
+            y_min, y_max = new_slopeDA.min(), new_slopeDA.max()
+            x_padding = (x_max - x_min) * 0.1
+            y_padding = (y_max - y_min) * 0.1
+            x_ticks = np.linspace(x_min - x_padding, x_max + x_padding, 3)
+            y_ticks = np.linspace(y_min - y_padding, y_max + y_padding, 3)
+
+            new_scatter_axes = Axes(
+                x_range=[x_ticks[0], x_ticks[-1]],
+                y_range=[y_ticks[0], y_ticks[-1]],
+                x_length=4,
+                y_length=4,
+                tips=False,
+                axis_config={"include_ticks": True, "include_numbers": True},
+                x_axis_config={"label_direction": DOWN},
+                y_axis_config={"label_direction": LEFT},
+            )
+
+            x_label = Text("Animal EI index", font_size=20)
+            y_label = Text("DA slope", font_size=20)
+            x_label.next_to(new_scatter_axes.x_axis, RIGHT)
+            y_label.next_to(new_scatter_axes.y_axis, UP)
+
+            slopeDA_vec_center = new_slope_vec.get_center()
+            mid_y = (slopeDA_vec_center[1] + self.camera.frame.get_bottom()[1]) / 2
+            mid_x = (big_heatmap.get_right()[0] + self.camera.frame.get_right()[0]) / 2
+
+            new_scatter_group = VGroup(new_scatter_axes, x_label, y_label).move_to([mid_x, mid_y, 0])
+            new_scatter_group.move_to([mid_x, mid_y, 0])
+            new_scatter_points = VGroup(*[
+                Dot(point=new_scatter_axes.coords_to_point(x, y), radius=0.08, color=BLUE)
+                for x, y in zip(animalEI, new_slopeDA)
+            ])
+
+            # --- 6. Animate Scatter and Fit ---
+            self.play(
+                ReplacementTransform(prev_scatter_group, new_scatter_group),
+                ReplacementTransform(prev_points, new_scatter_points),
+                run_time=1
+            )
+            new_fit_group, slope = draw_fitted_line(self, new_scatter_axes, animalEI, new_slopeDA, run_time=1)
+
+            # --- 7. Update Highlight Color Based on Fitted Slope ---
+            new_color = slope_to_color(slope)
+            new_highlight_sq.set_fill(new_color, opacity=1)
+            self.play(Transform(new_fit_group, new_highlight_sq), run_time=1)
+            self.wait(1)
+
+            # Update previous elements
+            prev_highlight = new_highlight_sq
+            prev_arrow = new_arrow
+            prev_slope_vec = new_slope_vec
+            prev_scatter_group = new_scatter_group
+            prev_points = new_scatter_points
+            prev_fit_group = new_fit_group
