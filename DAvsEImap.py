@@ -95,21 +95,20 @@ def draw_fitted_line(scene, axes, x_vals, y_vals,
     print(x_vals, y_vals)
     # 1. Fit line using linear regression
     x_vals_clean, y_vals_clean = remove_nan_values(x_vals, y_vals)
-
     if len(x_vals_clean) < 2:
         print("Not enough valid data points for polyfit.")
         return VGroup(), np.nan
-
     # Fit only on clean data
     slope, intercept = np.polyfit(x_vals_clean, y_vals_clean, 1)
-
     fit_func = lambda x: slope * x + intercept
+
     # 2. Plot the best-fit line over the window of the data
-    x_min, x_max = -1, 1
+    x_min, x_max = axes.x_range[:2]
     line = axes.plot(fit_func, x_range=[x_min, x_max], color=line_color)
+
     # 3. Add text showing the slope of the line
     slope_text = MathTex(rf"\text{{slope}} = {slope:.2f}",font_size=font_size)
-    slope_text.move_to(line.get_start() + LEFT * (slope_text.width / 2 + 0.1))
+    slope_text.next_to(line, UP + LEFT, buff=0.3)
     fit_group = VGroup(line, slope_text)
     # 5. Animate the line and box
     if run_time > 0:
@@ -119,17 +118,6 @@ def draw_fitted_line(scene, axes, x_vals, y_vals,
 
 # Helper function for reading actual data
 def getDAtrend(DAtrend, t1, t2, data_type='smoothed'):
-    """
-    Python version of MATLAB getDAtrend.
-    
-    Parameters:
-        DAtrend: loaded MATLAB struct (as a list or array of objects)
-        t1, t2: trial window indices (integers)
-        dataType: 'raw' or 'smooth' (default: 'raw')
-    Returns:
-        stats: double array of size (numAnimals, 1)
-    """
-
     # Determine dataType field
     if 'smooth' in data_type:
         key = 'slopeMap_smoothed'
@@ -268,7 +256,7 @@ class DAvsEImap(MovingCameraScene):
         # Circle the target pixel
         highlight_sq = Square(
             side_length=target_square.width + 0.1,
-            color=RED,
+            color=GREEN,
             stroke_width=4
         )
         highlight_sq.set_fill(opacity=0)
@@ -281,7 +269,7 @@ class DAvsEImap(MovingCameraScene):
             end_point=DA_label.get_left() - 0.2*RIGHT,
             angle=-PI/4,
             tip_length=0.2,
-            color=RED
+            color=GREEN
         )
         self.play(Create(highlight_sq), Create(curved_arr))
         self.wait(0.5)
@@ -292,14 +280,14 @@ class DAvsEImap(MovingCameraScene):
 
         # Step 6: Make a scatter plot of slopeDA and animalEI below slopeDA
         # Compute axis limits and paddings
-        x_min, x_max = -1, 1
         if np.all(np.isnan(slopeDA_clean)):
-            y_min, y_max = -1, 1
+            x_min, x_max = -1, 1
         else:
-            y_min, y_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
-            if y_min == y_max:  # avoid zero range
-                y_min -= 0.5
-                y_max += 0.5
+            x_min, x_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
+            if x_min == x_max:  # avoid zero range
+                x_min -= 0.5
+                x_max += 0.5
+        y_min, y_max = -1, 1
         x_padding = (x_max - x_min) * 0.1
         y_padding = (y_max - y_min) * 0.1
         x_ticks = np.linspace(x_min - x_padding, x_max + x_padding, 3)
@@ -317,8 +305,8 @@ class DAvsEImap(MovingCameraScene):
             y_axis_config={"label_direction": LEFT},
         )
         # Labels
-        x_label = Text("Animal\nEI index", font_size=20)
-        y_label = Text("DA slope", font_size=20)
+        x_label = Text("DA slope", font_size=20)
+        y_label = Text("Animal\nEI index", font_size=20)
         x_label.next_to(scatter_axes.x_axis, RIGHT, buff=0.3)
         y_label.next_to(scatter_axes.y_axis, UP, buff=0.3)
 
@@ -340,7 +328,7 @@ class DAvsEImap(MovingCameraScene):
                 radius=0.08,
                 color=BLUE
             )
-            for x, y in zip(animalEI_clean, slopeDA_clean)
+            for x, y in zip(slopeDA_clean, animalEI_clean)
         ])
         
         self.play(Create(scatter_axes), Write(x_label), Write(y_label))
@@ -348,11 +336,11 @@ class DAvsEImap(MovingCameraScene):
         self.wait(1)
 
         # Step 7: Fit a line to the scatter plot
-        fit_group, slope = draw_fitted_line(self, scatter_axes, animalEI_clean, slopeDA_clean, run_time=2)
+        fit_group, _ = draw_fitted_line(self, scatter_axes, slopeDA_clean, animalEI_clean, run_time=2)
         self.wait(1)
 
         # Step 8: Update the slope value to the heatmap highlighted pixel
-        highlight_color = slope_to_color(true_map[i, j], vmin=vmin, vmax=vmax)
+        highlight_color = slope_to_color(true_map[i-50-1, j-50-1], vmin=vmin, vmax=vmax)
         highlight_sq.set_fill(highlight_color, opacity=1)
         self.play(Transform(fit_group, highlight_sq), run_time=1)
         self.wait(2)
@@ -385,7 +373,7 @@ class DAvsEImap(MovingCameraScene):
             # --- 3. New Highlight Square + Arrow ---
             new_highlight_sq = Square(
                 side_length=target_square.width + 0.1,
-                color=RED,
+                color=GREEN,
                 stroke_width=4
             ).move_to(target_square.get_center()).set_fill(opacity=0)
 
@@ -394,7 +382,7 @@ class DAvsEImap(MovingCameraScene):
                 end_point=DA_label.get_left() - 0.2 * RIGHT,
                 angle=-PI/4,
                 tip_length=0.2,
-                color=RED
+                color=GREEN
             )
 
             # --- 4. Animate vector and square updates ---
@@ -407,14 +395,14 @@ class DAvsEImap(MovingCameraScene):
             )
 
             # --- 5. Scatter Plot Update ---
-            x_min, x_max = -1, 1
             if np.all(np.isnan(slopeDA_clean)):
-                y_min, y_max = -1, 1
+                x_min, x_max = -1, 1
             else:
-                y_min, y_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
-                if y_min == y_max:  # avoid zero range
-                    y_min -= 0.5
-                    y_max += 0.5
+                x_min, x_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
+                if x_min == x_max:  # avoid zero range
+                    x_min -= 0.5
+                    x_max += 0.5
+            y_min, y_max = -1, 1
             x_padding = (x_max - x_min) * 0.1
             y_padding = (y_max - y_min) * 0.1
             x_ticks = np.linspace(x_min - x_padding, x_max + x_padding, 3)
@@ -431,8 +419,8 @@ class DAvsEImap(MovingCameraScene):
                 y_axis_config={"label_direction": LEFT},
             )
 
-            x_label = Text("Animal\nEI index", font_size=20)
-            y_label = Text("DA slope", font_size=20)
+            x_label = Text("DA slope", font_size=20)
+            y_label = Text("Animal\nEI index", font_size=20)
             x_label.next_to(new_scatter_axes.x_axis, RIGHT)
             y_label.next_to(new_scatter_axes.y_axis, UP)
 
@@ -448,7 +436,7 @@ class DAvsEImap(MovingCameraScene):
                     radius=0.08,
                     color=BLUE
                 )
-                for x, y in zip(animalEI_clean, new_slopeDA_clean)
+                for x, y in zip(new_slopeDA_clean, animalEI_clean)
             ])
 
             # --- 6. Animate Scatter and Fit ---
@@ -457,10 +445,10 @@ class DAvsEImap(MovingCameraScene):
                 ReplacementTransform(prev_points, new_scatter_points),
                 run_time=1
             )
-            new_fit_group, slope = draw_fitted_line(self, new_scatter_axes, animalEI_clean, new_slopeDA_clean, run_time=1)
+            new_fit_group, _ = draw_fitted_line(self, new_scatter_axes, new_slopeDA_clean, animalEI_clean, run_time=1)
 
             # --- 7. Update Highlight Color Based on Fitted Slope ---
-            new_color = slope_to_color(true_map[i, j], vmin=vmin, vmax=vmax)
+            new_color = slope_to_color(true_map[i-50-1, j-50-1], vmin=vmin, vmax=vmax)
             new_highlight_sq.set_fill(new_color, opacity=1)
             self.play(Transform(new_fit_group, new_highlight_sq), run_time=1)
             self.wait(2)
@@ -484,13 +472,13 @@ class DAvsEImap(MovingCameraScene):
 
         # Step 11: repeat the process for the true heatmap
         # Randomly choose between 1 to 50 2 times
-        highlight_x = np.random.randint(1,47, size=2)
+        highlight_x = np.random.randint(1,47, size=5)
         window_time = np.array([np.random.randint(3, 50 - x) for x in highlight_x])
         highlight_y = highlight_x + window_time
 
         for i, j in zip(highlight_x, highlight_y):
             # --- 1. New Target Square ---
-            target_square = next((sq for sq in big_heatmap if getattr(sq, "indices", None) == (i, j)), None)
+            target_square = next((sq for sq in true_heatmap if getattr(sq, "indices", None) == (i, j)), None)
             if target_square is None:
                 continue
 
@@ -503,7 +491,7 @@ class DAvsEImap(MovingCameraScene):
             # --- 3. New Highlight Square + Arrow ---
             new_highlight_sq = Square(
                 side_length=target_square.width + 0.1,
-                color=RED,
+                color=GREEN,
                 stroke_width=4
             ).move_to(target_square.get_center()).set_fill(opacity=0)
 
@@ -512,7 +500,7 @@ class DAvsEImap(MovingCameraScene):
                 end_point=DA_label.get_left() - 0.2 * RIGHT,
                 angle=-PI/4,
                 tip_length=0.2,
-                color=RED
+                color=GREEN
             )
 
             # --- 4. Animate vector and square updates ---
@@ -525,14 +513,14 @@ class DAvsEImap(MovingCameraScene):
             )
 
             # --- 5. Scatter Plot Update ---
-            x_min, x_max = -1, 1
             if np.all(np.isnan(slopeDA_clean)):
-                y_min, y_max = -1, 1
+                x_min, x_max = -1, 1
             else:
-                y_min, y_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
-                if y_min == y_max:  # avoid zero range
-                    y_min -= 0.5
-                    y_max += 0.5
+                x_min, x_max = np.nanmin(slopeDA_clean), np.nanmax(slopeDA_clean)
+                if x_min == x_max:  # avoid zero range
+                    x_min -= 0.5
+                    x_max += 0.5
+            y_min, y_max = -1, 1
             x_padding = (x_max - x_min) * 0.1
             y_padding = (y_max - y_min) * 0.1
             x_ticks = np.linspace(x_min - x_padding, x_max + x_padding, 3)
@@ -549,8 +537,8 @@ class DAvsEImap(MovingCameraScene):
                 y_axis_config={"label_direction": LEFT},
             )
 
-            x_label = Text("Animal\nEI index", font_size=20)
-            y_label = Text("DA slope", font_size=20)
+            x_label = Text("DA slope", font_size=20)
+            y_label = Text("Animal\nEI index", font_size=20)
             x_label.next_to(new_scatter_axes.x_axis, RIGHT)
             y_label.next_to(new_scatter_axes.y_axis, UP)
 
@@ -566,7 +554,7 @@ class DAvsEImap(MovingCameraScene):
                     radius=0.08,
                     color=BLUE
                 )
-                for x, y in zip(animalEI_clean, new_slopeDA_clean)
+                for x, y in zip(new_slopeDA_clean, animalEI_clean)
             ])
 
             # --- 6. Animate Scatter and Fit ---
@@ -575,10 +563,10 @@ class DAvsEImap(MovingCameraScene):
                 ReplacementTransform(prev_points, new_scatter_points),
                 run_time=1
             )
-            new_fit_group, slope = draw_fitted_line(self, new_scatter_axes, animalEI_clean, new_slopeDA_clean, run_time=1)
+            new_fit_group, _ = draw_fitted_line(self, new_scatter_axes, new_slopeDA_clean, animalEI_clean, run_time=1)
 
             # --- 7. Update Highlight Color Based on Fitted Slope ---
-            new_color = slope_to_color(true_map[i, j], vmin=vmin, vmax=vmax)
+            new_color = slope_to_color(true_map[i-50-1, j-50-1], vmin=vmin, vmax=vmax)
             new_highlight_sq.set_fill(new_color, opacity=1)
             self.play(Transform(new_fit_group, new_highlight_sq), run_time=1)
             self.wait(1)
